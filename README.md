@@ -106,6 +106,19 @@ JAMA Benchmark Criteria: Analyzes Authorship, Attribution, Currency, and Disclos
 Contributing
 We welcome contributions to this project. Here’s how you can help:
 
+
+
+Full Pipeline Workflow:
+Video List Input: Paste a list of YouTube links into the script.
+Video Information Extraction: The script extracts information such as channel name, views, video length, etc., and scrapes the transcript.
+Healthcare Quality Scoring: Using an LLM, the script evaluates the transcript using DISCERN, Global Quality Score, and JAMA benchmark criteria.
+Excel Output: The data, along with scores, are exported to an Excel sheet with columns for DISCERN Score, Global Quality Score, and JAMA Criteria Score.
+Step-by-Step Example:
+You paste a list of video links.
+The script runs, scraping each video's details and transcript.
+The LLM evaluates each video and returns scores.
+An Excel sheet is generated, containing:
+Video ID, Channel Name, Country, Video Length, Views, Likes, Comments, Upload Year, Subtitles/CC Availability, Transcript, DISCERN Score, Global Quality Score, and JAMA Criteria Score.
 Fork the repository.
 Create a new branch for your feature or fix.
 Submit a pull request.
