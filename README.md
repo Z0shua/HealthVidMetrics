@@ -1,47 +1,56 @@
-EduTubeRater
-A Tool for Rating Educational YouTube Videos Using Healthcare Quality Metrics
+_A Tool for Rating Educational YouTube Videos Using Healthcare Quality Metrics_  
 
-Table of Contents
-Introduction
-Features
-Installation
-Usage
-API Setup
-Rating Criteria
-Contributing
-License
-Introduction
-EduTubeRater is an open-source Python tool designed to extract data from educational YouTube videos, particularly healthcare-related content, and rate them based on well-known healthcare scoring frameworks such as the DISCERN score, Global Quality Score (GQS), and JAMA benchmark criteria.
+## Table of Contents
+1. [Introduction](#introduction)
+2. [Features](#features)
+3. [Installation](#installation)
+4. [Usage](#usage)
+5. [API Setup](#api-setup)
+6. [Rating Criteria](#rating-criteria)
+7. [Contributing](#contributing)
+8. [License](#license)
+
+## Introduction
+
+**EduTubeRater** is an open-source Python tool designed to extract data from educational YouTube videos, particularly healthcare-related content, and rate them based on well-known healthcare scoring frameworks such as the DISCERN score, Global Quality Score (GQS), and JAMA benchmark criteria.
 
 This project pulls video metadata like the channel name, views, likes, comments, and transcripts, and leverages a Large Language Model (LLM) to automatically rate healthcare videos based on their content quality.
 
 This tool is designed for researchers, educators, and healthcare professionals looking to evaluate YouTube videos based on educational and informational quality.
 
-Features
-Extract metadata from YouTube videos (channel name, country, views, likes, comments, and subtitles availability).
-Scrape video transcripts (if available) for further analysis.
-Automatically rate healthcare content using:
-DISCERN Score: Quality of health information.
-Global Quality Score (GQS): Overall quality.
-JAMA Benchmark Criteria: Authorship, Attribution, Currency, and Disclosure.
-Export results to an Excel or CSV file for further analysis.
-Easy-to-use, customizable, and scalable for large datasets.
-Installation
-Clone the repository:
+## Features
 
-bash
-Copy code
+- Extract metadata from YouTube videos (channel name, country, views, likes, comments, and subtitles availability).
+- Scrape video transcripts (if available) for further analysis.
+- Automatically rate healthcare content using:
+  - **DISCERN Score**: Quality of health information.
+  - **Global Quality Score (GQS)**: Overall quality.
+  - **JAMA Benchmark Criteria**: Authorship, Attribution, Currency, and Disclosure.
+- Export results to an Excel or CSV file for further analysis.
+- Easy-to-use, customizable, and scalable for large datasets.
+
+## Installation
+
+Clone the repository:
+```bash
 git clone https://github.com/your-username/EduTubeRater.git
 cd EduTubeRater
-Install dependencies:
 
-bash
-Copy code
+YOUTUBE_API_KEY=your_youtube_api_key
+OPENAI_API_KEY=your_openai_api_key
+
+Install dependencies:
 pip install -r requirements.txt
+
 Prerequisites
 Python 3.7+
 YouTube Data API Key: You'll need to create a project in Google Cloud and enable the YouTube Data API.
 OpenAI API Key: For LLM-based automatic video ratings.
+Usage
+Add Your API Keys:
+
+After installing, create a .env file in the project root and add your API keys:
+
 Usage
 Add Your API Keys:
 
@@ -99,5 +108,3 @@ Create a new branch for your feature or fix.
 Submit a pull request.
 All contributions should follow the project style guide and pass any tests. Before opening a PR, ensure your code passes basic checks.
 
-Issues
-If you encounter bugs or have suggestions, please open an issue.
