@@ -1,0 +1,76 @@
+import pandas as pd
+from googleapiclient.discovery import build
+import re
+
+# Function to convert YouTube ISO 8601 duration to seconds
+def convert_duration_to_seconds(duration):
+    match = re.match('PT(\d+H)?(\d+M)?(\d+S)?', duration)
+    hours = int(match.group(1)[:-1]) if match.group(1) else 0
+    minutes = int(match.group(2)[:-1]) if match.group(2) else 0
+    seconds = int(match.group(3)[:-1]) if match.group(3) else 0
+    return hours * 3600 + minutes * 60 + seconds
+
+# Function to pull video details
+def get_video_details(youtube, video_ids):
+    video_details = []
+
+    request = youtube.videos().list(
+        part="snippet,contentDetails,statistics",
+        id=','.join(video_ids)
+    )
+    response = request.execute()
+
+    for item in response['items']:
+        video_id = item['id']
+        channel_name = item['snippet']['channelTitle']
+        country = item['snippet'].get('defaultAudioLanguage', 'Unknown')  # No direct country info
+        video_length = convert_duration_to_seconds(item['contentDetails']['duration'])
+        views = int(item['statistics'].get('viewCount', 0))
+        likes = int(item['statistics'].get('likeCount', 0))
+        comments = int(item['statistics'].get('commentCount', 0))
+        upload_year = item['snippet']['publishedAt'][:4]
+        subtitles = 'Yes' if 'caption' in item['contentDetails'] and item['contentDetails']['caption'] == 'true' else 'No'
+
+        video_details.append({
+            'Video ID': video_id,
+            'Channel Name': channel_name,
+            'Country': country,
+            'Video Length (Seconds)': video_length,
+            'Views': views,
+            'Likes': likes,
+            'Comments': comments,
+            'Upload Year': upload_year,
+            'Subtitles/CC Available': subtitles
+        })
+
+    return video_details
+
+# Function to save to Excel
+def save_to_excel(data, filename='youtube_videos.xlsx'):
+    df = pd.DataFrame(data)
+    df.to_excel(filename, index=False)
+
+# Main code to get YouTube video info
+def main(video_links):
+    # Extract Video IDs from links
+    video_ids = [link.split('v=')[-1] for link in video_links]
+
+    # YouTube API setup
+    api_key = 'YOUR_API_KEY'
+    youtube = build('youtube', 'v3', developerKey=api_key)
+
+    # Fetch video details
+    video_details = get_video_details(youtube, video_ids)
+
+    # Save to Excel
+    save_to_excel(video_details)
+
+    print(f"Video details saved to Excel.")
+
+# Example video links
+video_links = [
+    'https://www.youtube.com/watch?v=YOUR_VIDEO_ID_1',
+    'https://www.youtube.com/watch?v=YOUR_VIDEO_ID_2'
+]
+
+main(video_links)
