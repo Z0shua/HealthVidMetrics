@@ -66,6 +66,16 @@ def main(video_links):
     save_to_excel(video_details)
 
     print(f"Video details saved to Excel.")
+discern_score = input(f"Enter DISCERN score for video {video_id}: ")
+global_quality_score = input(f"Enter Global Quality score for video {video_id}: ")
+jama_criteria = input(f"Enter JAMA criteria score for video {video_id}: ")
+
+video_details.append({
+    ...
+    'DISCERN Score': discern_score,
+    'Global Quality Score': global_quality_score,
+    'JAMA Criteria Score': jama_criteria
+})
 
 # Example video links
 video_links = [
