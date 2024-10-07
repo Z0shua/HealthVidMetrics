@@ -1,0 +1,51 @@
+from youtube_transcript_api import YouTubeTranscriptApi
+
+# Function to get video transcript
+def get_video_transcript(video_id):
+    try:
+        transcript = YouTubeTranscriptApi.get_transcript(video_id)
+        # Join all transcript text into a single string
+        transcript_text = " ".join([entry['text'] for entry in transcript])
+        return transcript_text
+    except Exception as e:
+        print(f"Transcript not available for video {video_id}: {e}")
+        return None
+
+# Modify the get_video_details to include transcripts
+def get_video_details(youtube, video_ids):
+    video_details = []
+
+    request = youtube.videos().list(
+        part="snippet,contentDetails,statistics",
+        id=','.join(video_ids)
+    )
+    response = request.execute()
+
+    for item in response['items']:
+        video_id = item['id']
+        channel_name = item['snippet']['channelTitle']
+        country = item['snippet'].get('defaultAudioLanguage', 'Unknown')  # No direct country info
+        video_length = convert_duration_to_seconds(item['contentDetails']['duration'])
+        views = int(item['statistics'].get('viewCount', 0))
+        likes = int(item['statistics'].get('likeCount', 0))
+        comments = int(item['statistics'].get('commentCount', 0))
+        upload_year = item['snippet']['publishedAt'][:4]
+        subtitles = 'Yes' if 'caption' in item['contentDetails'] and item['contentDetails']['caption'] == 'true' else 'No'
+
+        # Get transcript
+        transcript = get_video_transcript(video_id)
+
+        video_details.append({
+            'Video ID': video_id,
+            'Channel Name': channel_name,
+            'Country': country,
+            'Video Length (Seconds)': video_length,
+            'Views': views,
+            'Likes': likes,
+            'Comments': comments,
+            'Upload Year': upload_year,
+            'Subtitles/CC Available': subtitles,
+            'Transcript': transcript
+        })
+
+    return video_details
