@@ -1,0 +1,122 @@
+import pandas as pd
+from googleapiclient.discovery import build
+import re
+import openai
+from youtube_transcript_api import YouTubeTranscriptApi
+
+# Function to convert YouTube ISO 8601 duration to seconds
+def convert_duration_to_seconds(duration):
+    match = re.match('PT(\d+H)?(\d+M)?(\d+S)?', duration)
+    hours = int(match.group(1)[:-1]) if match.group(1) else 0
+    minutes = int(match.group(2)[:-1]) if match.group(2) else 0
+    seconds = int(match.group(3)[:-1]) if match.group(3) else 0
+    return hours * 3600 + minutes * 60 + seconds
+
+# Function to get video details
+def get_video_details(youtube, video_ids):
+    video_details = []
+
+    request = youtube.videos().list(
+        part="snippet,contentDetails,statistics",
+        id=','.join(video_ids)
+    )
+    response = request.execute()
+
+    for item in response['items']:
+        video_id = item['id']
+        channel_name = item['snippet']['channelTitle']
+        country = item['snippet'].get('defaultAudioLanguage', 'Unknown')  # No direct country info
+        video_length = convert_duration_to_seconds(item['contentDetails']['duration'])
+        views = int(item['statistics'].get('viewCount', 0))
+        likes = int(item['statistics'].get('likeCount', 0))
+        comments = int(item['statistics'].get('commentCount', 0))
+        upload_year = item['snippet']['publishedAt'][:4]
+        subtitles = 'Yes' if 'caption' in item['contentDetails'] and item['contentDetails']['caption'] == 'true' else 'No'
+
+        try:
+            transcript = YouTubeTranscriptApi.get_transcript(video_id)
+            transcript_text = " ".join([entry['text'] for entry in transcript])
+        except Exception as e:
+            transcript_text = None
+            print(f"Transcript not available for video {video_id}: {e}")
+
+        video_details.append({
+            'Video ID': video_id,
+            'Channel Name': channel_name,
+            'Country': country,
+            'Video Length (Seconds)': video_length,
+            'Views': views,
+            'Likes': likes,
+            'Comments': comments,
+            'Upload Year': upload_year,
+            'Subtitles/CC Available': subtitles,
+            'Transcript': transcript_text
+        })
+
+    return video_details
+
+# Function to save to Excel
+def save_to_excel(data, filename='youtube_videos.xlsx'):
+    df = pd.DataFrame(data)
+    df.to_excel(filename, index=False)
+
+# Function to evaluate healthcare video quality
+def evaluate_healthcare_video(transcript, video_id):
+    if transcript is None:
+        return {"DISCERN Score": None, "Global Quality Score": None, "JAMA Criteria Score": None}
+
+    prompt = f"""
+    The following is the transcript of a YouTube healthcare video. Please evaluate the quality of the information provided based on the following criteria:
+    
+    1. **DISCERN Score**: Rate the quality of the health information (scale of 1 to 5).
+    2. **Global Quality Score**: Rate the overall quality (1 to 5).
+    3. **JAMA Criteria Score**: Assess based on the Journal of the American Medical Association's four benchmark criteria: Authorship, Attribution, Currency, and Disclosure (score of 0-4).
+    
+    Transcript: {transcript}
+
+    Please provide scores for DISCERN, Global Quality, and JAMA criteria.
+    """
+
+    openai.api_key = 'YOUR_API_KEY'
+    response = openai.Completion.create(
+        engine="text-davinci-003",  # Use appropriate GPT model
+        prompt=prompt,
+        max_tokens=200
+    )
+
+    evaluation = response.choices[0].text.strip()
+    discern_score = re.search(r"DISCERN Score: (\d)", evaluation)
+    global_quality_score = re.search(r"Global Quality Score: (\d)", evaluation)
+    jama_score = re.search(r"JAMA Criteria Score: (\d)", evaluation)
+
+    return {
+        "DISCERN Score": int(discern_score.group(1)) if discern_score else None,
+        "Global Quality Score": int(global_quality_score.group(1)) if global_quality_score else None,
+        "JAMA Criteria Score": int(jama_score.group(1)) if jama_score else None
+    }
+
+# Main code to get YouTube video info
+def main(video_links):
+    video_ids = [link.split('v=')[-1] for link in video_links]
+
+    youtube = build('youtube', 'v3', developerKey='YOUR_API_KEY')
+
+    video_details = get_video_details(youtube, video_ids)
+
+    data = []
+    for detail in video_details:
+        scores = evaluate_healthcare_video(detail['Transcript'], detail['Video ID'])
+        detail.update(scores)
+        data.append(detail)
+
+    save_to_excel(data)
+
+    print(f"Video details saved to Excel.")
+
+# Example video links
+video_links = [
+    'https://www.youtube.com/watch?v=YOUR_VIDEO_ID_1',
+    'https://www.youtube.com/watch?v=YOUR_VIDEO_ID_2'
+]
+
+main(video_links)
