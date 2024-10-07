@@ -8,7 +8,6 @@ _A Tool for Rating Educational YouTube Videos Using Healthcare Quality Metrics_
 5. [API Setup](#api-setup)
 6. [Rating Criteria](#rating-criteria)
 7. [Contributing](#contributing)
-8. [License](#license)
 
 ## Introduction
 
@@ -51,7 +50,7 @@ Add Your API Keys:
 
 After installing, create a .env file in the project root and add your API keys:
 
-Usage
+## Usage
 Add Your API Keys:
 
 After installing, create a .env file in the project root and add your API keys:
@@ -83,7 +82,7 @@ The tool will output an Excel file (youtube_videos.xlsx) that contains video det
 
 Each row corresponds to a video, with columns for all extracted data and computed scores.
 
-API Setup
+## API Setup
 To use EduTubeRater, you need API keys from the following services:
 
 YouTube Data API
@@ -94,14 +93,18 @@ OpenAI API
 Sign up for OpenAI API access.
 Generate an API Key.
 Add it to your .env file.
-Rating Criteria
+
+
+## Rating Criteria
 The tool uses healthcare-specific quality benchmarks to evaluate YouTube content:
 
 DISCERN Score: Rates the reliability and quality of health information (1-5).
 Global Quality Score (GQS): A general score for the overall quality of the video (1-5).
 JAMA Benchmark Criteria: Analyzes Authorship, Attribution, Currency, and Disclosure (scores from 0-4).
-Contributing
-We welcome contributions to EduTubeRater! Here's how you can help:
+
+
+## Contributing
+We welcome contributions to to this project Here's how you can help:
 
 Fork the repository.
 Create a new branch for your feature or fix.
