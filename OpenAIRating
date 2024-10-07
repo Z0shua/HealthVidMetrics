@@ -1,0 +1,41 @@
+import openai
+
+# Function to evaluate healthcare video quality using an LLM
+def evaluate_healthcare_video(transcript, video_id):
+    if transcript is None:
+        return {"DISCERN Score": None, "Global Quality Score": None, "JAMA Criteria Score": None}
+
+    # Define the prompt for the LLM
+    prompt = f"""
+    The following is the transcript of a YouTube healthcare video. Please evaluate the quality of the information provided based on the following criteria:
+    
+    1. **DISCERN Score**: Rate the quality of the health information (scale of 1 to 5).
+    2. **Global Quality Score**: Rate the overall quality (1 to 5).
+    3. **JAMA Criteria Score**: Assess based on the Journal of the American Medical Association's four benchmark criteria: Authorship, Attribution, Currency, and Disclosure (score of 0-4).
+    
+    Transcript: {transcript}
+
+    Please provide scores for DISCERN, Global Quality, and JAMA criteria.
+    """
+
+    # Call the OpenAI API with the prompt (replace 'your-api-key' with your actual OpenAI key)
+    openai.api_key = 'YOUR_API_KEY'
+    response = openai.Completion.create(
+        engine="text-davinci-003",  # Use appropriate GPT model
+        prompt=prompt,
+        max_tokens=200
+    )
+
+    # Extract the results from the response
+    evaluation = response.choices[0].text.strip()
+    
+    # Parse the scores from the response (you can refine this based on the exact output)
+    discern_score = re.search(r"DISCERN Score: (\d)", evaluation)
+    global_quality_score = re.search(r"Global Quality Score: (\d)", evaluation)
+    jama_score = re.search(r"JAMA Criteria Score: (\d)", evaluation)
+
+    return {
+        "DISCERN Score": int(discern_score.group(1)) if discern_score else None,
+        "Global Quality Score": int(global_quality_score.group(1)) if global_quality_score else None,
+        "JAMA Criteria Score": int(jama_score.group(1)) if jama_score else None
+    }
