@@ -1,7 +1,7 @@
 import streamlit as st
 import os
 import pandas as pd
-from src.healthvidmetrics.config import load_api_keys
+from src.healthvidmetrics.config import load_api_keys, get_ai_provider_config
 from src.healthvidmetrics.youtube_api import extract_video_id, get_video_details
 from src.healthvidmetrics.scoring import evaluate_healthcare_video
 from src.healthvidmetrics.export import save_to_excel
@@ -16,20 +16,59 @@ def main():
     st.subheader("Healthcare Video Quality Analysis Tool")
     st.markdown("---")
     st.sidebar.header("Configuration")
+    
     # API Keys
-    env_youtube_api_key, env_openai_api_key = load_api_keys()
+    api_keys = load_api_keys()
     youtube_api_key = st.sidebar.text_input(
         "YouTube API Key",
         type="password",
-        value=env_youtube_api_key or '',
+        value=api_keys.get('youtube', ''),
         help="Enter your YouTube Data API v3 key"
     )
-    openai_api_key = st.sidebar.text_input(
-        "OpenAI API Key",
-        type="password",
-        value=env_openai_api_key or '',
-        help="Enter your OpenAI API key"
+    
+    # AI Provider Selection
+    st.sidebar.subheader("AI Provider")
+    ai_providers = {
+        "OpenAI (GPT)": "openai",
+        "Anthropic (Claude)": "anthropic", 
+        "Google (Gemini)": "gemini",
+        "DeepSeek": "deepseek",
+        "Hugging Face": "huggingface"
+    }
+    
+    selected_provider = st.sidebar.selectbox(
+        "Choose AI Provider",
+        list(ai_providers.keys()),
+        help="Select which AI service to use for video evaluation"
     )
+    
+    provider_key = ai_providers[selected_provider]
+    
+    # Provider-specific API key input
+    provider_api_key = st.sidebar.text_input(
+        f"{selected_provider} API Key",
+        type="password",
+        value=api_keys.get(provider_key, ''),
+        help=f"Enter your {selected_provider} API key"
+    )
+    
+    # Model selection (optional)
+    models = {
+        "openai": ["gpt-3.5-turbo", "gpt-4", "gpt-4-turbo"],
+        "anthropic": ["claude-3-haiku-20240307", "claude-3-sonnet-20240229", "claude-3-opus-20240229"],
+        "gemini": ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro"],
+        "deepseek": ["deepseek-chat", "deepseek-coder"],
+        "huggingface": ["meta-llama/Llama-2-7b-chat-hf", "microsoft/DialoGPT-medium"]
+    }
+    
+    selected_model = st.sidebar.selectbox(
+        "Model (Optional)",
+        ["Default"] + models.get(provider_key, []),
+        help="Select specific model (uses default if not specified)"
+    )
+    
+    model = None if selected_model == "Default" else selected_model
+    
     st.header("Video Analysis")
     input_method = st.radio(
         "Choose input method:",
@@ -59,6 +98,7 @@ def main():
     st.subheader("Analysis Options")
     include_transcript = st.checkbox("Include video transcripts", value=True)
     include_ai_evaluation = st.checkbox("Include AI-powered quality evaluation", value=True)
+    
     if st.button("🚀 Start Analysis", type="primary"):
         if not video_urls:
             st.error("Please provide at least one video URL")
@@ -66,8 +106,8 @@ def main():
         if not youtube_api_key:
             st.error("Please provide a YouTube API key")
             return
-        if include_ai_evaluation and not openai_api_key:
-            st.error("Please provide an OpenAI API key for AI evaluation")
+        if include_ai_evaluation and not provider_api_key:
+            st.error(f"Please provide a {selected_provider} API key for AI evaluation")
             return
         video_ids = []
         invalid_urls = []
@@ -91,9 +131,15 @@ def main():
             video_details = get_video_details(youtube, video_ids, include_transcript=include_transcript)
             progress_bar.progress(30)
             if include_ai_evaluation:
-                status_text.text("Evaluating video quality with AI...")
+                status_text.text(f"Evaluating video quality with {selected_provider}...")
                 for i, detail in enumerate(video_details):
-                    scores = evaluate_healthcare_video(detail['Transcript'], detail['Video ID'], openai_api_key=openai_api_key)
+                    scores = evaluate_healthcare_video(
+                        detail['Transcript'], 
+                        detail['Video ID'], 
+                        provider_name=provider_key,
+                        api_key=provider_api_key,
+                        model=model
+                    )
                     detail.update(scores)
                     progress_bar.progress(30 + (i + 1) * 60 / len(video_details))
             if not include_transcript:
@@ -147,6 +193,7 @@ def main():
         <div style='text-align: center; color: #666;'>
         <p>HealthVidMetrics - Healthcare Video Quality Analysis Tool</p>
         <p>Uses DISCERN, Global Quality Score, and JAMA Benchmark Criteria</p>
+        <p>Supports multiple AI providers: OpenAI, Anthropic, Google Gemini, DeepSeek, Hugging Face</p>
         </div>
         """,
         unsafe_allow_html=True

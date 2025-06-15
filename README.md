@@ -28,12 +28,13 @@ _A Tool for Rating Educational YouTube Videos Using Healthcare Quality Metrics_
 
 **HealthVidMetrics** is an open-source Python tool designed to extract data from educational YouTube videos, particularly healthcare-related content, and rate them based on well-known healthcare scoring frameworks such as the DISCERN score, Global Quality Score (GQS), and JAMA benchmark criteria.
 
-This project pulls video metadata like the channel name, views, likes, comments, and transcripts, and leverages a Large Language Model (LLM) to automatically rate healthcare videos based on their content quality.
+This project pulls video metadata like the channel name, views, likes, comments, and transcripts, and leverages **multiple AI providers** to automatically rate healthcare videos based on their content quality.
 
 This tool is designed for researchers, educators, and healthcare professionals looking to evaluate YouTube videos based on educational and informational quality.
 
 ## Features
 
+- **Multiple AI Providers**: Support for OpenAI, Anthropic, Google Gemini, DeepSeek, and Hugging Face
 - **Multiple Interfaces**: Web-based Streamlit app and command-line interface
 - **Video Metadata Extraction**: Channel name, country, views, likes, comments, duration, and subtitles availability
 - **Transcript Analysis**: Automatic transcript extraction and analysis
@@ -58,7 +59,7 @@ pip install -r requirements.txt
 
 * Python 3.7+
 * YouTube Data API Key: Create a project in Google Cloud and enable the YouTube Data API
-* OpenAI API Key: For LLM-based automatic video ratings
+* **One or more AI Provider API Keys**: Choose from OpenAI, Anthropic, Google Gemini, DeepSeek, or Hugging Face
 
 ## Usage
 
@@ -69,6 +70,10 @@ pip install -r requirements.txt
    ```bash
    YOUTUBE_API_KEY=your_youtube_api_key
    OPENAI_API_KEY=your_openai_api_key
+   ANTHROPIC_API_KEY=your_anthropic_api_key
+   GEMINI_API_KEY=your_gemini_api_key
+   DEEPSEEK_API_KEY=your_deepseek_api_key
+   HUGGINGFACE_API_KEY=your_huggingface_api_key
    ```
 
 2. **Run the Streamlit App**:
@@ -79,14 +84,20 @@ pip install -r requirements.txt
 3. **Open in Browser**:
    The application will open at `http://localhost:8501`
 
+4. **Select AI Provider**:
+   Choose your preferred AI provider from the sidebar and enter the corresponding API key
+
 ### Command Line Interface
 
 ```bash
-# Analyze single video
+# Analyze single video with OpenAI (default)
 python cli.py --urls "https://www.youtube.com/watch?v=example"
 
-# Analyze multiple videos
-python cli.py --urls "https://www.youtube.com/watch?v=example1" "https://www.youtube.com/watch?v=example2"
+# Use specific AI provider
+python cli.py --urls "https://www.youtube.com/watch?v=example" --provider anthropic
+
+# Use specific model
+python cli.py --urls "https://www.youtube.com/watch?v=example" --provider gemini --model gemini-1.5-pro
 
 # Analyze videos from CSV file
 python cli.py --file sample_videos.csv
@@ -107,7 +118,7 @@ python cli.py --urls "https://www.youtube.com/watch?v=example" --output my_analy
 ### Analysis Options
 
 - **Include Transcripts**: Extract and include video transcripts
-- **AI Evaluation**: Use OpenAI to assess video quality
+- **AI Evaluation**: Use selected AI provider to assess video quality
 - **Export Formats**: Excel (.xlsx) or CSV files
 
 ## API Setup
@@ -121,12 +132,32 @@ To use HealthVidMetrics, you need API keys from the following services:
 4. Create credentials (API Key)
 5. Add the API key to your `.env` file
 
-### OpenAI API
+### AI Providers (Choose one or more)
+
+**OpenAI:**
 1. Go to [OpenAI Platform](https://platform.openai.com/)
 2. Sign up or log in
 3. Go to API Keys section
 4. Create a new API key
-5. Add the API key to your `.env` file
+
+**Anthropic (Claude):**
+1. Go to [Anthropic Console](https://console.anthropic.com/)
+2. Sign up or log in
+3. Create an API key
+
+**Google Gemini:**
+1. Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. Create an API key
+
+**DeepSeek:**
+1. Go to [DeepSeek Platform](https://platform.deepseek.com/)
+2. Sign up or log in
+3. Create an API key
+
+**Hugging Face:**
+1. Go to [Hugging Face](https://huggingface.co/settings/tokens)
+2. Sign up or log in
+3. Create an access token
 
 ## Rating Criteria
 
